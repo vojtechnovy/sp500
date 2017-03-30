@@ -1,0 +1,47 @@
+## output is figure of sp500 from 2010 to 2017
+
+## imports
+import datetime
+import pandas as pd
+import pandas.io.data
+from pandas import DataFrame
+import matplotlib.pyplot as plt
+from matplotlib import style
+
+style.use('ggplot')
+
+
+## download data to a .csv file
+sp500 = pd.io.data.get_data_yahoo('%5EGSPC',
+                                 start=datetime.datetime(2000, 10, 1),
+                                 end=datetime.datetime(2017,1,1))
+#print(sp500[:5])
+sp500.to_csv('sp500_ohlc.csv')
+
+
+## load dataframe
+df = pd.read_csv('sp500_ohlc.csv', index_col='Date', parse_dates=True)
+#print(df[:4])
+
+
+## add column for difference between high low for that particular day = fluctuations
+df['H-L'] = df.High - df.Low
+#print(df[:4])
+
+## rolling mean
+close = df['Adj Close']
+ma = pd.rolling_mean(close, 50)
+
+
+## plot
+fig, ax = plt.subplots(figsize=(10, 10))
+
+ax1 = plt.subplot(2,1,1)
+ax1.plot(close, label='sp500')
+ax1.plot(ma, label='50MA')
+plt.legend(loc = 5)
+
+ax2 = plt.subplot(2,1,2, sharex = ax1)
+ax2.plot(df['H-L'], label='sp500')
+
+plt.show()
